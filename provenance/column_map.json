@@ -1,0 +1,34 @@
+{
+ "columns": {
+  "decisions": [
+   "id",
+   "session_id",
+   "group_id",
+   "stage",
+   "action",
+   "trigger_source",
+   "message",
+   "hint",
+   "scaffolds",
+   "metrics_snapshot_json",
+   "form_snapshot_json",
+   "created_at"
+  ],
+  "groups": [
+   "id",
+   "group_number",
+   "current_stage",
+   "status",
+   "created_at"
+  ],
+  "interactions": [
+   "id",
+   "group_id",
+   "stage",
+   "event_type",
+   "target",
+   "created_at"
+  ]
+ },
+ "schema": "agentaudit/columnmap/1"
+}

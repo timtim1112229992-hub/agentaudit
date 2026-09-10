@@ -1,0 +1,79 @@
+{
+ "code": {
+  "branch": "main",
+  "commit": "0bc078aa6d9bbc7b6716fdaa7cc8d3368fb6004e",
+  "dirty": false
+ },
+ "column_map": {
+  "decisions": [
+   "id",
+   "session_id",
+   "group_id",
+   "stage",
+   "action",
+   "trigger_source",
+   "message",
+   "hint",
+   "scaffolds",
+   "metrics_snapshot_json",
+   "form_snapshot_json",
+   "created_at"
+  ],
+  "groups": [
+   "id",
+   "group_number",
+   "current_stage",
+   "status",
+   "created_at"
+  ],
+  "interactions": [
+   "id",
+   "group_id",
+   "stage",
+   "event_type",
+   "target",
+   "created_at"
+  ]
+ },
+ "environment": {
+  "implementation": "CPython",
+  "packages": {
+   "numpy": "2.4.6",
+   "pandas": "2.3.3",
+   "scipy": "1.17.1",
+   "statsmodels": "0.14.6"
+  },
+  "python": "3.13.9"
+ },
+ "generated_utc": "2026-09-10T04:40:13+00:00",
+ "notes": "decision-level policy audit",
+ "schema": "agentaudit/provenance/1",
+ "settings": {
+  "analytic_groups": 10,
+  "bootstrap_replicates": 10000,
+  "early_late_split": 0.3333333333333333,
+  "permutation_replicates": 10000,
+  "seed": 20260625,
+  "support_level": {
+   "probe": 2,
+   "redirect": 1,
+   "release": 0,
+   "scaffold": 3
+  }
+ },
+ "source": "restricted",
+ "tables": {
+  "decisions": {
+   "aggregate_sha256": "6aa9797f331ef1ae7626d8e784c74bf37f4194b16a6786328247dbe43b058d53",
+   "n_records": 316
+  },
+  "groups": {
+   "aggregate_sha256": "660557afc0a6d1003a2e03b45c195f42cb9834427f8e8746e1de4e59a38566b7",
+   "n_records": 12
+  },
+  "interactions": {
+   "aggregate_sha256": "f5101f4e85abf2701e008cefdb1f3a7a566a404939237468da29289a320e1e4c",
+   "n_records": 1401
+  }
+ }
+}
