@@ -21,10 +21,13 @@ from agentaudit.pipeline import run             # noqa: E402
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run the decision-level policy audit.")
     parser.add_argument("--output", type=Path, default=None, help="directory for results")
+    parser.add_argument("--publish-provenance", action="store_true",
+                        help="also write the provenance package into the repository, "
+                             "replacing the one describing the reference execution")
     parser.add_argument("--quiet", action="store_true")
     args = parser.parse_args()
 
-    results = run(args.output)
+    results = run(args.output, publish_provenance=args.publish_provenance)
     if not args.quiet:
         corpus = results["corpus"]
         print(f"source                 : {corpus['source']}")

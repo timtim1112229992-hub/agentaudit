@@ -32,7 +32,14 @@ def _json_safe(value):
     return value
 
 
-def run(output_dir: Path | None = None) -> dict:
+def run(output_dir: Path | None = None, publish_provenance: bool = False) -> dict:
+    """Execute the audit.
+
+    The provenance package is written beside the results. It is copied into the
+    repository only when publication is asked for explicitly, so that an
+    exploratory run, or a test run against the synthetic corpus, cannot silently
+    replace the package describing the reference execution.
+    """
     out = Path(output_dir or SETTINGS.output_dir)
     out.mkdir(parents=True, exist_ok=True)
     tables_dir = out / "tables"
@@ -136,5 +143,8 @@ def run(output_dir: Path | None = None) -> dict:
         json.dumps(_json_safe(results), indent=1, sort_keys=True), encoding="utf-8")
 
     manifest = provenance.build_manifest(meta, notes="decision-level policy audit")  # P10
-    provenance.write_manifest(manifest)
+    provenance.write_manifest(manifest, out / "provenance")
+    if publish_provenance:
+        provenance.write_manifest(
+            provenance.build_manifest(meta, notes="decision-level policy audit"))
     return results

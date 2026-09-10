@@ -140,6 +140,38 @@ def test_figures_are_written(tmp_path, frame):
         assert (tmp_path / name).stat().st_size > 0
 
 
+def test_running_the_pipeline_leaves_the_committed_provenance_alone():
+    """An exploratory or test run must not overwrite the reference package.
+
+    The provenance in the repository describes one specific execution. If any run
+    could replace it, the published digests would silently stop matching the
+    records the reported values came from.
+    """
+    import hashlib
+    import tempfile
+
+    from agentaudit.config import PROVENANCE_DIR
+    from agentaudit.pipeline import run
+
+    def fingerprints():
+        return {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
+                for p in sorted(PROVENANCE_DIR.glob("*.json"))}
+
+    before = fingerprints()
+    if not before:
+        pytest.skip("no committed provenance package to protect")
+    with tempfile.TemporaryDirectory() as tmp:
+        run(Path(tmp))
+    assert fingerprints() == before, "a pipeline run modified the committed provenance"
+
+
+def test_provenance_is_written_beside_the_results(tmp_path):
+    from agentaudit.pipeline import run
+    run(tmp_path)
+    written = {p.name for p in (tmp_path / "provenance").glob("*.json")}
+    assert written == {"column_map.json", "record_digests.json", "run_manifest.json"}
+
+
 def test_pipeline_is_deterministic(tmp_path):
     from agentaudit.pipeline import run
     a = run(tmp_path / "a")
