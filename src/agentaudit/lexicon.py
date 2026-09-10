@@ -37,7 +37,7 @@ MARKS_DONE = ("太棒", "真棒", "很棒", "继续保持", "已经完成", "收
 
 QUESTION_MARKS = ("?", "？")
 
-# Functional categories the recoder may assign. "affirm" has no counterpart in the
-# source taxonomy, which is the point: a category the instrument cannot express is
-# the kind of thing a fidelity audit is meant to surface.
+# Functional categories the recoder may assign. The set is defined on functional
+# grounds rather than copied from a source instrument, so that a fidelity
+# comparison can reveal categories an instrument does not express.
 CATEGORIES = ("scaffold", "release", "redirect", "probe", "affirm", "other")

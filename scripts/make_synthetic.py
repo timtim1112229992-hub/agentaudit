@@ -25,8 +25,9 @@ N_STAGES = 7
 TRIGGERS = ("idle", "help_click", "next_click")
 PROVENANCE = ("local", "llm", "fallback")
 
-# Declared generative policy: support intensity falls as completion rises, but the
-# release band is deliberately narrow, mirroring a threshold rule with no mastery test.
+# Declared generative policy for the demonstration corpus: support intensity falls
+# as completion rises, with a narrow release band. The bands are an arbitrary choice
+# made to exercise the estimators, and describe no deployed system.
 BANDS = ((0.40, "scaffold"), (0.80, "probe"), (1.01, "release"))
 
 

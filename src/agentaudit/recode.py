@@ -6,11 +6,13 @@ label the source system stored. Agreement between the two is therefore evidence
 about the instrument, not about human judgement, and it does not substitute for
 double coding by two people.
 
-The recoder assigns the function a message performs. It carries one category the
-source taxonomy lacks, "affirm", covering messages that praise completed work
-without asking for anything or offering anything. A message of that kind neither
-supports nor releases, and collapsing it into either would conceal the very
-distinction the study is about.
+The recoder assigns the function a message performs. Its category set is chosen on
+functional grounds rather than copied from any source instrument, and it includes
+"affirm" for messages that praise completed work without asking for anything or
+offering anything. A message of that kind neither supports nor releases, so
+forcing it into either category would blur the distinction the analysis measures.
+Whether a given source instrument expresses that category is an empirical question
+the fidelity comparison answers rather than an assumption made here.
 """
 from __future__ import annotations
 
