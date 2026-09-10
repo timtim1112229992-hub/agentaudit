@@ -16,8 +16,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .config import PROVENANCE_DIR, SETTINGS
+from .lexicon import RULESET_VERSION
 
-PACKAGES = ("numpy", "pandas", "scipy", "statsmodels")
+PACKAGES = ("numpy", "pandas", "scipy", "statsmodels", "matplotlib")
 ALLOWED_KEYS = {"schema", "generated_utc", "source", "code", "environment", "settings",
                 "column_map", "tables", "notes"}
 
@@ -57,7 +58,8 @@ def build_manifest(ingest_meta: dict, notes: str = "") -> dict:
                      "bootstrap_replicates": SETTINGS.bootstrap_replicates,
                      "permutation_replicates": SETTINGS.permutation_replicates,
                      "early_late_split": SETTINGS.early_late_split,
-                     "support_level": SETTINGS.support_level},
+                     "support_level": SETTINGS.support_level,
+                     "recode_ruleset": RULESET_VERSION},
         "column_map": ingest_meta.get("column_map"),
         "tables": ingest_meta.get("tables"),
         "notes": notes,

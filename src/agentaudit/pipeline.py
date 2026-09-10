@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from . import indices, models, provenance, resample, sequence
+from . import figures, indices, models, provenance, recode, resample, sequence
 from .config import SETTINGS
 from .derive import analytic_subset, build_frame
 from .ingest import load_tables
@@ -49,6 +49,18 @@ def run(output_dir: Path | None = None) -> dict:
         "n_stages": int(df["stage"].nunique()),
         "source": meta["source"],
     }}
+
+    coded = recode.recode_frame(df)                                 # P3 independent recoding
+    conf = recode.confusion(coded)
+    conf.to_csv(tables_dir / "label_fidelity_confusion.csv")
+    results["recoding"] = recode.agreement_summary(df)
+    results["recoding"]["release_confirmed_interval"] = resample.exact_proportion(
+        int(((coded["action"] == "release") & (coded["recoded"] == "release")).sum()),
+        int((coded["action"] == "release").sum()))
+    results["recoded_share_interval"] = {
+        c: resample.exact_proportion(int((coded["recoded"] == c).sum()), int(len(coded)))
+        for c in sorted(set(coded["recoded"]))
+    }
 
     census = indices.action_census(df)                              # P4 census
     census.to_csv(tables_dir / "action_census.csv")
@@ -116,6 +128,9 @@ def run(output_dir: Path | None = None) -> dict:
         "excluding_highest_volume_group": indices.action_census(
             df[df["group"] != int(df["group"].value_counts().idxmax())])["percent"].to_dict(),
     }
+
+    results["figures"] = figures.render_all(                        # P9 render
+        df, probs, per_group, conf, results, out / "figures")
 
     (out / "results.json").write_text(
         json.dumps(_json_safe(results), indent=1, sort_keys=True), encoding="utf-8")

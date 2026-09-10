@@ -80,9 +80,70 @@ def test_indices_are_reported_separately(frame):
     assert len(per_group) == frame["group"].nunique()
 
 
+def test_recoder_never_sees_the_stored_label():
+    """The recoder takes message, hint and option count. Nothing else."""
+    import inspect
+
+    from agentaudit.recode import recode_one
+    assert list(inspect.signature(recode_one).parameters) == ["message", "hint", "n_options"]
+
+
+def test_recoder_is_deterministic():
+    from agentaudit.recode import recode_one
+    args = ("please look again at what you wrote", "compare the two", 0)
+    assert recode_one(*args) == recode_one(*args)
+
+
+def test_offering_options_outranks_a_question():
+    """A message that supplies ready-made answers has already made the decision."""
+    from agentaudit.recode import recode_one
+    assert recode_one("what colour is it?", "", 3) == "scaffold"
+    assert recode_one("what colour is it?", "", 0) == "probe"
+
+
+def test_recoder_handles_missing_text():
+    from agentaudit.recode import recode_one
+    assert recode_one(None, None, 0) == "other"
+    assert recode_one(float("nan"), float("nan"), 2) == "scaffold"
+
+
+def test_agreement_measures_agree_with_a_perfect_coder():
+    from agentaudit.recode import cohen_kappa, krippendorff_alpha_nominal
+    s = pd.Series(["a", "b", "a", "c", "b", "c"])
+    assert cohen_kappa(s, s) == pytest.approx(1.0)
+    assert krippendorff_alpha_nominal(s, s) == pytest.approx(1.0)
+
+
+def test_agreement_falls_when_coders_diverge():
+    from agentaudit.recode import cohen_kappa
+    a = pd.Series(["a", "a", "b", "b", "c", "c"])
+    b = pd.Series(["a", "b", "b", "c", "c", "a"])
+    assert cohen_kappa(a, b) < 0.5
+
+
+def test_recoding_covers_every_decision(frame):
+    from agentaudit.recode import recode_frame
+    coded = recode_frame(frame)
+    assert coded["recoded"].notna().all()
+    assert len(coded) == len(frame)
+
+
+def test_figures_are_written(tmp_path, frame):
+    from agentaudit import figures, indices, recode, sequence
+    probs = sequence.transition_matrix(sequence.transition_counts(frame))
+    per_group = indices.per_group_indices(frame)
+    conf = recode.confusion(recode.recode_frame(frame))
+    results = {"contingency_index": {"slope": -1.0}, "fading_index": {"slope": -0.5}}
+    names = figures.render_all(frame, probs, per_group, conf, results, tmp_path)
+    assert len(names) == 7
+    for name in names:
+        assert (tmp_path / name).stat().st_size > 0
+
+
 def test_pipeline_is_deterministic(tmp_path):
     from agentaudit.pipeline import run
     a = run(tmp_path / "a")
     b = run(tmp_path / "b")
     assert a["action_census"] == b["action_census"]
     assert a["corpus"] == b["corpus"]
+    assert a["recoding"]["cohen_kappa"] == b["recoding"]["cohen_kappa"]

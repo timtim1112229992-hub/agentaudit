@@ -7,6 +7,6 @@ first perfectly while never doing the second.
 """
 from __future__ import annotations
 
-__all__ = ["config", "ingest", "derive", "indices", "sequence", "models",
-           "resample", "provenance", "pipeline"]
+__all__ = ["config", "ingest", "derive", "lexicon", "recode", "indices", "sequence",
+           "models", "resample", "figures", "provenance", "pipeline"]
 __version__ = "0.1.0"

@@ -1,7 +1,7 @@
 {
  "code": {
   "branch": "main",
-  "commit": "2010b9fdad86e5863bafb8a2760a36dde5ebae1d",
+  "commit": "f35734b1bf0fddaed8a712859cea05af2757fc61",
   "dirty": true
  },
  "column_map": {
@@ -38,6 +38,7 @@
  "environment": {
   "implementation": "CPython",
   "packages": {
+   "matplotlib": "3.10.8",
    "numpy": "2.4.6",
    "pandas": "2.3.3",
    "scipy": "1.17.1",
@@ -45,7 +46,7 @@
   },
   "python": "3.13.9"
  },
- "generated_utc": "2026-09-10T04:42:04+00:00",
+ "generated_utc": "2026-09-10T05:16:57+00:00",
  "notes": "decision-level policy audit",
  "schema": "agentaudit/provenance/1",
  "settings": {
@@ -53,6 +54,7 @@
   "bootstrap_replicates": 10000,
   "early_late_split": 0.3333333333333333,
   "permutation_replicates": 10000,
+  "recode_ruleset": "recode/1.0.0",
   "seed": 20260625,
   "support_level": {
    "probe": 2,
