@@ -1,8 +1,8 @@
 {
  "code": {
   "branch": "main",
-  "commit": "0bc078aa6d9bbc7b6716fdaa7cc8d3368fb6004e",
-  "dirty": false
+  "commit": "2010b9fdad86e5863bafb8a2760a36dde5ebae1d",
+  "dirty": true
  },
  "column_map": {
   "decisions": [
@@ -45,7 +45,7 @@
   },
   "python": "3.13.9"
  },
- "generated_utc": "2026-09-10T04:40:13+00:00",
+ "generated_utc": "2026-09-10T04:42:04+00:00",
  "notes": "decision-level policy audit",
  "schema": "agentaudit/provenance/1",
  "settings": {
@@ -61,19 +61,19 @@
    "scaffold": 3
   }
  },
- "source": "restricted",
+ "source": "synthetic",
  "tables": {
   "decisions": {
-   "aggregate_sha256": "6aa9797f331ef1ae7626d8e784c74bf37f4194b16a6786328247dbe43b058d53",
-   "n_records": 316
+   "aggregate_sha256": "9e84d6ba4806c1d148414103ecd6e36403686b2cb8ad22852363b66674eca2ab",
+   "n_records": 247
   },
   "groups": {
-   "aggregate_sha256": "660557afc0a6d1003a2e03b45c195f42cb9834427f8e8746e1de4e59a38566b7",
+   "aggregate_sha256": "79fab5cb9cc986677ada4900f869879da6ce7e1f9cd503d03fc3b345229b0707",
    "n_records": 12
   },
   "interactions": {
-   "aggregate_sha256": "f5101f4e85abf2701e008cefdb1f3a7a566a404939237468da29289a320e1e4c",
-   "n_records": 1401
+   "aggregate_sha256": "33574146a3baad8017341cc47b915c9610ee0ebc7cc9f75f0353bb8acefa5258",
+   "n_records": 247
   }
  }
 }

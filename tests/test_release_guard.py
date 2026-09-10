@@ -125,6 +125,37 @@ def test_commit_authors_exclude_automated_tools():
         assert needle not in lowered, f"commit authored or committed by {needle}"
 
 
+IDENTITY_MARKERS = ("orcid.org", "orcid:", "affiliation:", "@ac.uk", "@edu.", ".edu>",
+                    "corresponding author", "cff-version", "authors:", "author =",
+                    "acknowledgement", "acknowledgment", "grant no", "funded by")
+
+
+def test_no_author_identity_is_released():
+    """The archive names nobody. Attribution is carried by the manuscript instead.
+
+    A deposit that identifies its creators cannot be used under anonymised review,
+    and an archive is cited by identifier rather than by name in any case.
+    """
+    offenders = []
+    for path in tracked_files():
+        full = ROOT / path
+        if full.resolve() == Path(__file__).resolve():
+            continue                    # this file names the patterns it searches for
+        if not full.exists() or full.suffix.lower() in {".csv"}:
+            continue
+        lowered = full.read_text(encoding="utf-8", errors="ignore").lower()
+        for marker in IDENTITY_MARKERS:
+            if marker in lowered:
+                offenders.append(f"{path}: {marker}")
+    assert not offenders, f"author identity is present in the release: {offenders}"
+
+
+def test_no_citation_metadata_file_is_present():
+    present = [p.name for p in ROOT.iterdir()
+               if p.is_file() and p.name.lower() in {"citation.cff", "codemeta.json", "authors", "authors.md"}]
+    assert not present, f"citation metadata naming creators is present: {present}"
+
+
 def test_commit_messages_carry_no_tool_attribution_trailer():
     """Editors and agents may append a co-authorship trailer of their own accord.
 
