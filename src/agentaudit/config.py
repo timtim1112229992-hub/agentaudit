@@ -50,6 +50,9 @@ class Settings:
         "release": 0, "redirect": 1, "probe": 2, "scaffold": 3,
     })
     action_order: tuple = ("release", "redirect", "probe", "scaffold")
+    # Below this count a category is described by exact intervals rather than
+    # entered into a regression, whatever the separation check returns.
+    min_category_n: int = 20
 
     @property
     def data_dir(self) -> Path | None:

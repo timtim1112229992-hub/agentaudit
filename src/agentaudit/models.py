@@ -11,20 +11,60 @@ from scipy import stats
 from .config import SETTINGS
 
 
-def policy_model(df: pd.DataFrame) -> pd.DataFrame:
-    """Action category on task state and activation cause, clustered by group.
+def separation_report(df: pd.DataFrame) -> pd.DataFrame:
+    """Identify action categories that an activation cause predicts perfectly.
 
-    Cluster-robust covariance is used because ten groups generate hundreds of
-    decisions and treating those as independent would understate every interval.
-    The outcome is coded explicitly rather than through a formula, so that the
-    reference category is fixed by the support ordering instead of alphabetically.
+    A category observed under only one trigger level admits no finite maximum
+    likelihood estimate, so it must be described by exact counts rather than
+    entered into a regression. Reporting the check keeps the exclusion visible
+    instead of leaving it to be inferred from a missing row.
+    """
+    d = df.dropna(subset=["completion", "action", "trigger", "stage"])
+    if d.empty:
+        return pd.DataFrame()
+    triggers = sorted(d["trigger"].unique())
+    rows = []
+    for action in [a for a in SETTINGS.action_order if a in set(d["action"])]:
+        sub = d[d["action"] == action]
+        present = sorted(sub["trigger"].unique())
+        rows.append({
+            "action": action,
+            "n": int(len(sub)),
+            "triggers_present": "|".join(present),
+            "triggers_absent": "|".join(t for t in triggers if t not in present),
+            "separated": bool(len(present) < 2),
+            "completion_min": round(float(sub["completion"].min()), 4),
+            "completion_max": round(float(sub["completion"].max()), 4),
+        })
+    return pd.DataFrame(rows)
+
+
+def policy_model(df: pd.DataFrame) -> pd.DataFrame:
+    """Support level on task state and activation cause, clustered by group.
+
+    The pre-specified four-category multinomial is not estimable on this corpus.
+    Release occurs under a single trigger and redirect under two of three, so both
+    are perfectly separated and their coefficients diverge rather than converge.
+    The estimable contrast is therefore fitted directly as a binomial model of the
+    two categories that vary across every trigger level, and the separated
+    categories are reported through exact intervals elsewhere. Cluster-robust
+    covariance is used because ten groups generate hundreds of decisions and
+    treating those as independent would understate every interval.
     """
     d = df.dropna(subset=["completion", "action", "trigger", "stage"]).copy()
-    levels = [a for a in SETTINGS.action_order if a in set(d["action"])]
-    if len(levels) < 2:
+    separated = separation_report(d)
+    if separated.empty:
         return pd.DataFrame()
-    codes = {a: i for i, a in enumerate(levels)}          # release is the reference
-    y = d["action"].map(codes).astype(int)
+    estimable = [r["action"] for _, r in separated.iterrows()
+                 if not r["separated"] and r["n"] >= SETTINGS.min_category_n]
+    if len(estimable) != 2:
+        return pd.DataFrame()
+
+    # Reference is the more supportive category, so a positive coefficient reads
+    # as a move towards withdrawing support.
+    reference, outcome = sorted(estimable, key=lambda a: -SETTINGS.support_level[a])
+    d = d[d["action"].isin(estimable)]
+    y = (d["action"] == outcome).astype(int)
 
     exog = pd.get_dummies(d[["trigger"]], prefix="trigger", drop_first=True, dtype=float)
     exog["completion"] = d["completion"].astype(float).to_numpy()
@@ -33,22 +73,20 @@ def policy_model(df: pd.DataFrame) -> pd.DataFrame:
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        model = sm.MNLogit(y.reset_index(drop=True), exog)
-        try:
-            fit = model.fit(disp=False, method="newton", maxiter=200,
-                            cov_type="cluster", cov_kwds={"groups": d["group"].to_numpy()})
-        except Exception:
-            fit = model.fit(disp=False, method="bfgs", maxiter=500)
+        fit = sm.GLM(y.reset_index(drop=True), exog, family=sm.families.Binomial()).fit(
+            cov_type="cluster", cov_kwds={"groups": d["group"].to_numpy()})
 
-    params, pvals = fit.params, fit.pvalues
-    rows = []
-    for j in range(params.shape[1]):
-        outcome = levels[j + 1]
-        for term in params.index:
-            rows.append({"outcome_vs_reference": f"{outcome} vs {levels[0]}", "term": str(term),
-                         "coef": float(params.iloc[params.index.get_loc(term), j]),
-                         "p": float(pvals.iloc[pvals.index.get_loc(term), j])})
-    return pd.DataFrame(rows)
+    lo, hi = fit.conf_int()[0], fit.conf_int()[1]
+    return pd.DataFrame([{
+        "outcome_vs_reference": f"{outcome} vs {reference}",
+        "term": str(term),
+        "coef": float(fit.params[term]),
+        "se": float(fit.bse[term]),
+        "ci_lo": float(lo[term]),
+        "ci_hi": float(hi[term]),
+        "p": float(fit.pvalues[term]),
+        "n": int(len(d)),
+    } for term in exog.columns])
 
 
 def provenance_action_table(df: pd.DataFrame) -> pd.DataFrame:

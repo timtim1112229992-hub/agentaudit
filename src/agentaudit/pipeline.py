@@ -110,6 +110,11 @@ def run(output_dir: Path | None = None, publish_provenance: bool = False) -> dic
     results["absorption"] = sequence.absorption_summary(probs)
     results["stationary_distribution"] = sequence.stationary_distribution(probs).round(4).to_dict()
 
+    separation = models.separation_report(df)
+    if not separation.empty:
+        separation.to_csv(tables_dir / "separation_report.csv", index=False)
+        results["separation_report"] = separation.to_dict(orient="records")
+
     policy = models.policy_model(df)
     if not policy.empty:
         policy.to_csv(tables_dir / "policy_model.csv", index=False)
