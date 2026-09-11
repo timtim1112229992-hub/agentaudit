@@ -135,10 +135,18 @@ def run(output_dir: Path | None = None, publish_provenance: bool = False) -> dic
         df, lambda d: float((d["action"] == "release").mean()),
         SETTINGS.bootstrap_replicates, SETTINGS.seed)
 
+    # The comparison that answers "what does the dominant group do to the composition"
+    # has to hold the exclusion rule fixed, so the baseline is the analytic frame and not
+    # the full export. The pre-exclusion census is kept separately rather than dropped.
+    dominant = int(df["group"].value_counts().idxmax())
     results["sensitivity"] = {                                      # P8 sensitivity
-        "all_groups_included": indices.action_census(full)["percent"].to_dict(),
+        "analytic_corpus": indices.action_census(df)["percent"].to_dict(),
         "excluding_highest_volume_group": indices.action_census(
-            df[df["group"] != int(df["group"].value_counts().idxmax())])["percent"].to_dict(),
+            df[df["group"] != dominant])["percent"].to_dict(),
+        "before_group_exclusions": indices.action_census(full)["percent"].to_dict(),
+        "n_analytic": int(len(df)),
+        "n_excluding_highest_volume_group": int((df["group"] != dominant).sum()),
+        "n_before_group_exclusions": int(len(full)),
     }
 
     results["figures"] = figures.render_all(                        # P9 render
