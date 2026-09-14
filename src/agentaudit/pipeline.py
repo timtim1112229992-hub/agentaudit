@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 
 from . import figures, indices, models, provenance, recode, resample, sequence
-from .config import SETTINGS
+from .config import DATA_DIR_ENV, SETTINGS
 from .derive import analytic_subset, build_frame
 from .ingest import load_tables
 
@@ -32,7 +32,33 @@ def _json_safe(value):
     return value
 
 
-def run(output_dir: Path | None = None, publish_provenance: bool = False) -> dict:
+def _refuse_synthetic_overwrite(out: Path, source: str, allow: bool) -> None:
+    """Stop a synthetic run from silently replacing results computed from the corpus.
+
+    The corpus location arrives through an environment variable and its absence is
+    not an error, so a shell that has lost the variable produces a run that looks
+    entirely normal and quietly writes synthetic numbers over real ones. The two
+    are not distinguishable by eye once written. Refusing here is cheap; noticing
+    afterwards depends on someone rereading a digest.
+    """
+    if source != "synthetic" or allow:
+        return
+    previous = out / "results.json"
+    if not previous.exists():
+        return
+    try:
+        recorded = json.loads(previous.read_text(encoding="utf-8"))["corpus"]["source"]
+    except (ValueError, KeyError, OSError):
+        return
+    if recorded == "restricted":
+        raise SystemExit(
+            f"refusing to overwrite results computed from the restricted corpus with a "
+            f"synthetic run: {out}\nset {DATA_DIR_ENV} to the corpus directory, or pass "
+            f"allow_synthetic_overwrite=True if a synthetic run really is intended")
+
+
+def run(output_dir: Path | None = None, publish_provenance: bool = False,
+        allow_synthetic_overwrite: bool = False) -> dict:
     """Execute the audit.
 
     The provenance package is written beside the results. It is copied into the
@@ -46,6 +72,11 @@ def run(output_dir: Path | None = None, publish_provenance: bool = False) -> dic
     tables_dir.mkdir(exist_ok=True)
 
     frames, meta = load_tables()                                    # P1 ingest
+    _refuse_synthetic_overwrite(out, meta["source"], allow_synthetic_overwrite)
+    if publish_provenance and meta["source"] == "synthetic":
+        raise SystemExit(
+            "refusing to publish a reference provenance package built from the synthetic "
+            f"corpus; set {DATA_DIR_ENV} to the corpus directory first")
     full = build_frame(frames)                                      # P2 derive
     df = analytic_subset(full)
 

@@ -1,7 +1,7 @@
 {
  "code": {
   "branch": "main",
-  "commit": "e7ab7dda9d7b74da8f6b34162c17628e1b2fb874",
+  "commit": "01e4ebe73aaf55a24b4c6b02cd1931720f4cf315",
   "dirty": false
  },
  "column_map": {
@@ -46,7 +46,7 @@
   },
   "python": "3.13.9"
  },
- "generated_utc": "2026-09-10T05:27:30+00:00",
+ "generated_utc": "2026-09-14T05:41:51+00:00",
  "notes": "decision-level policy audit",
  "schema": "agentaudit/provenance/1",
  "settings": {
